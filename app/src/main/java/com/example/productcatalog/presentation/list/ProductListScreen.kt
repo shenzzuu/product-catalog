@@ -137,6 +137,7 @@ fun ProductItem(product: Product, onClick: () -> Unit) {
                     text = product.title,
                     style = MaterialTheme.typography.titleSmall,
                     maxLines = 2,
+                    minLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(4.dp))
