@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
+import com.example.productcatalog.presentation.components.SkeletonProductDetail
 import com.example.productcatalog.presentation.list.ErrorState
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -93,7 +94,7 @@ fun ProductDetailScreen(
                 .padding(padding)
         ) {
             if (state.isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                SkeletonProductDetail()
             } else if (state.error != null) {
                 ErrorState(
                     message = state.error!!,

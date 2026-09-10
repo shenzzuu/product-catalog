@@ -108,3 +108,52 @@ fun SkeletonProductCard() {
         }
     }
 }
+
+@Composable
+fun SkeletonProductDetail() {
+    val brush = ShimmerBrush()
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        // Main Image
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(250.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(brush)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        // Title
+        Box(modifier = Modifier.fillMaxWidth(0.8f).height(32.dp).clip(RoundedCornerShape(8.dp)).background(brush))
+        Spacer(modifier = Modifier.height(16.dp))
+        // Price & Rating Row
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Box(modifier = Modifier.fillMaxWidth(0.3f).height(28.dp).clip(RoundedCornerShape(6.dp)).background(brush))
+            Box(modifier = Modifier.fillMaxWidth(0.2f).height(24.dp).clip(RoundedCornerShape(6.dp)).background(brush))
+        }
+        Spacer(modifier = Modifier.height(24.dp))
+        // Description Header
+        Box(modifier = Modifier.fillMaxWidth(0.4f).height(20.dp).clip(RoundedCornerShape(4.dp)).background(brush))
+        Spacer(modifier = Modifier.height(12.dp))
+        // Description body
+        Box(modifier = Modifier.fillMaxWidth().height(16.dp).clip(RoundedCornerShape(4.dp)).background(brush))
+        Spacer(modifier = Modifier.height(8.dp))
+        Box(modifier = Modifier.fillMaxWidth(0.9f).height(16.dp).clip(RoundedCornerShape(4.dp)).background(brush))
+        Spacer(modifier = Modifier.height(8.dp))
+        Box(modifier = Modifier.fillMaxWidth(0.75f).height(16.dp).clip(RoundedCornerShape(4.dp)).background(brush))
+        
+        Spacer(modifier = Modifier.height(32.dp))
+        // More images Header
+        Box(modifier = Modifier.fillMaxWidth(0.3f).height(20.dp).clip(RoundedCornerShape(4.dp)).background(brush))
+        Spacer(modifier = Modifier.height(12.dp))
+        // More images row
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            repeat(3) {
+                Box(modifier = Modifier.size(120.dp).clip(RoundedCornerShape(8.dp)).background(brush))
+            }
+        }
+    }
+}
