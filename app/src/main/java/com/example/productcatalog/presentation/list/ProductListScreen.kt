@@ -12,10 +12,13 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -32,6 +35,21 @@ fun ProductListScreen(
     onProductClick: (Int) -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
+    val pullToRefreshState = rememberPullToRefreshState()
+
+    if (pullToRefreshState.isRefreshing) {
+        LaunchedEffect(true) {
+            viewModel.loadProducts(isRefresh = true)
+        }
+    }
+
+    LaunchedEffect(state.isRefreshing) {
+        if (state.isRefreshing) {
+            pullToRefreshState.startRefresh()
+        } else {
+            pullToRefreshState.endRefresh()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -88,46 +106,57 @@ fun ProductListScreen(
                         style = MaterialTheme.typography.bodyLarge
                     )
                 } else {
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(2),
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .nestedScroll(pullToRefreshState.nestedScrollConnection)
                     ) {
-                        itemsIndexed(state.products) { index, product ->
-                            ProductItem(product = product, onClick = { onProductClick(product.id) })
+                        LazyVerticalGrid(
+                            columns = GridCells.Fixed(2),
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            itemsIndexed(state.products) { index, product ->
+                                ProductItem(product = product, onClick = { onProductClick(product.id) })
 
-                            if (index >= state.products.size - 1 && !state.isLoading && !state.isPaginating && !state.hasReachedEnd) {
-                                LaunchedEffect(key1 = index) {
-                                    viewModel.loadProducts()
+                                if (index >= state.products.size - 1 && !state.isLoading && !state.isPaginating && !state.hasReachedEnd) {
+                                    LaunchedEffect(key1 = index) {
+                                        viewModel.loadProducts()
+                                    }
+                                }
+                            }
+
+                            if (state.isPaginating) {
+                                item(span = { GridItemSpan(2) }) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(16.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                                    }
+                                }
+                            }
+                            if (state.error != null && state.products.isNotEmpty()) {
+                                item(span = { GridItemSpan(2) }) {
+                                    ErrorState(
+                                        message = state.error!!,
+                                        onRetry = { viewModel.loadProducts() },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(16.dp)
+                                    )
                                 }
                             }
                         }
 
-                        if (state.isPaginating) {
-                            item(span = { GridItemSpan(2) }) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                                }
-                            }
-                        }
-                        if (state.error != null && state.products.isNotEmpty()) {
-                            item(span = { GridItemSpan(2) }) {
-                                ErrorState(
-                                    message = state.error!!,
-                                    onRetry = { viewModel.loadProducts() },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp)
-                                )
-                            }
-                        }
+                        PullToRefreshContainer(
+                            state = pullToRefreshState,
+                            modifier = Modifier.align(Alignment.TopCenter)
+                        )
                     }
                 }
             }
