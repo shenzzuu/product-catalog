@@ -33,14 +33,20 @@ class ProductListViewModel(
             searchQueryFlow
                 .debounce(500)
                 .collectLatest { query ->
-                    _uiState.update { it.copy(searchQuery = query) }
                     loadProducts(isRefresh = true)
                 }
         }
     }
 
     fun onSearchQueryChanged(query: String) {
+        // Update UI state immediately so the text field shows what the user types
+        _uiState.update { it.copy(searchQuery = query) }
+        // Update the debounced flow to trigger the API call after 500ms
         searchQueryFlow.value = query
+    }
+
+    fun triggerSearch() {
+        loadProducts(isRefresh = true)
     }
 
     fun loadProducts(isRefresh: Boolean = false) {
@@ -52,7 +58,7 @@ class ProductListViewModel(
             val skip = if (isRefresh) 0 else currentState.products.size
             
             if (isRefresh) {
-                _uiState.update { it.copy(isRefreshing = true, error = null) }
+                _uiState.update { it.copy(isRefreshing = true, error = null, hasReachedEnd = false) }
                 if (currentState.products.isEmpty()) {
                     _uiState.update { it.copy(isLoading = true, isRefreshing = false) }
                 }
@@ -60,7 +66,7 @@ class ProductListViewModel(
                 _uiState.update { it.copy(isPaginating = true, error = null) }
             }
 
-            val query = currentState.searchQuery
+            val query = _uiState.value.searchQuery
             val result = if (query.isNotBlank()) {
                 repository.searchProducts(query, skip)
             } else {

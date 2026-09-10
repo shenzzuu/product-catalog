@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
@@ -16,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -30,37 +32,61 @@ fun ProductListScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        OutlinedTextField(
-            value = state.searchQuery,
-            onValueChange = viewModel::onSearchQueryChanged,
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Product Catalog") },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
+            )
+        }
+    ) { padding ->
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            placeholder = { Text("Search products...") },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
-            singleLine = true
-        )
+                .fillMaxSize()
+                .padding(padding)
+        ) {
+            // Modern search bar
+            OutlinedTextField(
+                value = state.searchQuery,
+                onValueChange = viewModel::onSearchQueryChanged,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                placeholder = { Text("Search products...") },
+                leadingIcon = {
+                    IconButton(onClick = { viewModel.triggerSearch() }) {
+                        Icon(Icons.Default.Search, contentDescription = "Search")
+                    }
+                },
+                trailingIcon = {
+                    if (state.searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { viewModel.onSearchQueryChanged("") }) {
+                            Icon(Icons.Default.Close, contentDescription = "Clear")
+                        }
+                    }
+                },
+                singleLine = true,
+                shape = RoundedCornerShape(16.dp)
+            )
 
-        Box(modifier = Modifier.fillMaxSize()) {
-            if (state.isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            } else if (state.error != null && state.products.isEmpty()) {
-                ErrorState(
-                    message = state.error!!,
-                    onRetry = { viewModel.loadProducts(isRefresh = true) },
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            } else if (state.products.isEmpty()) {
-                Text(
-                    "No products found.",
-                    modifier = Modifier.align(Alignment.Center),
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            } else {
-                Box(
-                    modifier = Modifier.fillMaxSize()
-                ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                if (state.isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                } else if (state.error != null && state.products.isEmpty()) {
+                    ErrorState(
+                        message = state.error!!,
+                        onRetry = { viewModel.loadProducts(isRefresh = true) },
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                } else if (state.products.isEmpty() && !state.isRefreshing) {
+                    Text(
+                        "No products found.",
+                        modifier = Modifier.align(Alignment.Center),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                } else {
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(2),
                         modifier = Modifier.fillMaxSize(),
@@ -77,7 +103,7 @@ fun ProductListScreen(
                                 }
                             }
                         }
-                        
+
                         if (state.isPaginating) {
                             item(span = { GridItemSpan(2) }) {
                                 Box(
@@ -91,15 +117,15 @@ fun ProductListScreen(
                             }
                         }
                         if (state.error != null && state.products.isNotEmpty()) {
-                             item(span = { GridItemSpan(2) }) {
-                                 ErrorState(
-                                     message = state.error!!,
-                                     onRetry = { viewModel.loadProducts() },
-                                     modifier = Modifier
-                                         .fillMaxWidth()
-                                         .padding(16.dp)
-                                 )
-                             }
+                            item(span = { GridItemSpan(2) }) {
+                                ErrorState(
+                                    message = state.error!!,
+                                    onRetry = { viewModel.loadProducts() },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp)
+                                )
+                            }
                         }
                     }
                 }
@@ -114,7 +140,8 @@ fun ProductItem(product: Product, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() },
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        shape = RoundedCornerShape(12.dp)
     ) {
         Column(
             modifier = Modifier.fillMaxWidth()
@@ -125,7 +152,7 @@ fun ProductItem(product: Product, onClick: () -> Unit) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f)
-                    .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)),
+                    .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)),
                 contentScale = ContentScale.Crop
             )
             Column(
@@ -140,12 +167,12 @@ fun ProductItem(product: Product, onClick: () -> Unit) {
                     minLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(6.dp))
                 Text(
                     text = "$${product.price}",
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.primary,
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                    fontWeight = FontWeight.Bold
                 )
             }
         }
