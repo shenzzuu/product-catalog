@@ -22,6 +22,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.productcatalog.domain.model.Product
+import com.example.productcatalog.presentation.components.SkeletonProductGrid
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -73,7 +74,7 @@ fun ProductListScreen(
 
             Box(modifier = Modifier.fillMaxSize()) {
                 if (state.isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                    SkeletonProductGrid()
                 } else if (state.error != null && state.products.isEmpty()) {
                     ErrorState(
                         message = state.error!!,

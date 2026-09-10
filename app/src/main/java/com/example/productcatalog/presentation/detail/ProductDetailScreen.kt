@@ -1,5 +1,7 @@
 package com.example.productcatalog.presentation.detail
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -8,17 +10,19 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
 import com.example.productcatalog.presentation.list.ErrorState
 import org.koin.androidx.compose.koinViewModel
@@ -32,6 +36,44 @@ fun ProductDetailScreen(
     viewModel: ProductDetailViewModel = koinViewModel(parameters = { parametersOf(productId) })
 ) {
     val state by viewModel.uiState.collectAsState()
+    var selectedImageUrl by remember { mutableStateOf<String?>(null) }
+
+    // Fullscreen image viewer dialog
+    if (selectedImageUrl != null) {
+        Dialog(
+            onDismissRequest = { selectedImageUrl = null },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black)
+                    .clickable { selectedImageUrl = null }
+            ) {
+                AsyncImage(
+                    model = selectedImageUrl,
+                    contentDescription = "Full size image",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.Center),
+                    contentScale = ContentScale.Fit
+                )
+                IconButton(
+                    onClick = { selectedImageUrl = null },
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(16.dp)
+                ) {
+                    Icon(
+                        Icons.Default.Close,
+                        contentDescription = "Close",
+                        tint = Color.White,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -72,7 +114,8 @@ fun ProductDetailScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(250.dp)
-                            .clip(RoundedCornerShape(12.dp)),
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { selectedImageUrl = product.thumbnail },
                         contentScale = ContentScale.Crop
                     )
 
@@ -130,7 +173,8 @@ fun ProductDetailScreen(
                                     contentDescription = "Product Image",
                                     modifier = Modifier
                                         .size(120.dp)
-                                        .clip(RoundedCornerShape(8.dp)),
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .clickable { selectedImageUrl = imageUrl },
                                     contentScale = ContentScale.Crop
                                 )
                             }
