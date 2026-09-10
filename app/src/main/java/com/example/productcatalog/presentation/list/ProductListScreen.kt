@@ -130,15 +130,48 @@ fun ProductListScreen(
                                     }
                                 }
                             }
-                            if (state.error != null && state.products.isNotEmpty()) {
-                                item(span = { GridItemSpan(2) }) {
-                                    ErrorState(
-                                        message = state.error!!,
-                                        onRetry = { viewModel.loadProducts() },
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(16.dp)
-                                    )
+                        }
+
+                        if (state.error != null && state.products.isNotEmpty()) {
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .align(Alignment.BottomCenter)
+                                    .padding(16.dp),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                                )
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Row(
+                                        modifier = Modifier.weight(1f),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Warning,
+                                            contentDescription = "Error",
+                                            tint = MaterialTheme.colorScheme.error
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            text = state.error!!,
+                                            color = MaterialTheme.colorScheme.error,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            maxLines = 2,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Button(onClick = { viewModel.loadProducts() }) {
+                                        Text("Retry")
+                                    }
                                 }
                             }
                         }
