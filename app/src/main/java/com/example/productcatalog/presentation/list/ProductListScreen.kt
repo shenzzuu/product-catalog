@@ -9,7 +9,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,9 +56,7 @@ fun ProductListScreen(
                     style = MaterialTheme.typography.bodyLarge
                 )
             } else {
-                PullToRefreshBox(
-                    isRefreshing = state.isRefreshing,
-                    onRefresh = { viewModel.loadProducts(isRefresh = true) },
+                Box(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     LazyColumn(
