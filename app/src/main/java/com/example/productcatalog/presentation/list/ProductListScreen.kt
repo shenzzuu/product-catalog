@@ -7,18 +7,19 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.*
-import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -28,28 +29,17 @@ import com.example.productcatalog.domain.model.Product
 import com.example.productcatalog.presentation.components.SkeletonProductGrid
 import org.koin.androidx.compose.koinViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun ProductListScreen(
     viewModel: ProductListViewModel = koinViewModel(),
     onProductClick: (Int) -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
-    val pullToRefreshState = rememberPullToRefreshState()
-
-    if (pullToRefreshState.isRefreshing) {
-        LaunchedEffect(true) {
-            viewModel.loadProducts(isRefresh = true)
-        }
-    }
-
-    LaunchedEffect(state.isRefreshing) {
-        if (state.isRefreshing) {
-            pullToRefreshState.startRefresh()
-        } else {
-            pullToRefreshState.endRefresh()
-        }
-    }
+    val pullToRefreshState = rememberPullRefreshState(
+        refreshing = state.isRefreshing,
+        onRefresh = { viewModel.loadProducts(isRefresh = true) }
+    )
 
     Scaffold(
         topBar = {
@@ -109,7 +99,7 @@ fun ProductListScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .nestedScroll(pullToRefreshState.nestedScrollConnection)
+                            .pullRefresh(pullToRefreshState)
                     ) {
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(2),
@@ -153,9 +143,11 @@ fun ProductListScreen(
                             }
                         }
 
-                        PullToRefreshContainer(
+                        PullRefreshIndicator(
+                            refreshing = state.isRefreshing,
                             state = pullToRefreshState,
-                            modifier = Modifier.align(Alignment.TopCenter)
+                            modifier = Modifier.align(Alignment.TopCenter),
+                            contentColor = MaterialTheme.colorScheme.primary
                         )
                     }
                 }

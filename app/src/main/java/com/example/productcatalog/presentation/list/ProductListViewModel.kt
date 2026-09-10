@@ -58,9 +58,10 @@ class ProductListViewModel(
             val skip = if (isRefresh) 0 else currentState.products.size
             
             if (isRefresh) {
-                _uiState.update { it.copy(isRefreshing = true, error = null, hasReachedEnd = false) }
                 if (currentState.products.isEmpty()) {
-                    _uiState.update { it.copy(isLoading = true, isRefreshing = false) }
+                    _uiState.update { it.copy(isLoading = true, isRefreshing = false, error = null, hasReachedEnd = false) }
+                } else {
+                    _uiState.update { it.copy(isRefreshing = true, isLoading = false, error = null, hasReachedEnd = false) }
                 }
             } else {
                 _uiState.update { it.copy(isPaginating = true, error = null) }
